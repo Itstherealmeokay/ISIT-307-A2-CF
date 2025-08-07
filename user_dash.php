@@ -11,11 +11,6 @@ $name = $_SESSION['name'];
 $user_id = $_SESSION['user_id'];
 include('db_config.php');
 
-$query = "SELECT * FROM ChargingLocations";
-$result = $conn->query($query);
-
-
-
 ?>
 
 <DOCTYPE html>
@@ -29,6 +24,14 @@ $result = $conn->query($query);
         </style>
     </head>
     <body>
+        <?php
+        $sql = "SELECT cl.location_id, cl.description, cl.num_stations, cl.cost_per_hour, COUNT(cs.session_id) AS active_sessions
+                FROM ChargingLocations cl
+                LEFT JOIN ChargingSessions cs ON cl.location_id = cs.location_id AND cs.check_out_time IS NULL
+                GROUP BY cl.location_id
+                HAVING COUNT(cs.session_id) < cl.num_stations";
+        $result = $conn->query($sql);
+        ?>
         <h1>Welcome, User! <?php echo $name; ?></h1>
         <div class="table-container">
             <table border="1">
