@@ -3,13 +3,14 @@ session_start();
 
 include('db_config.php');
 
-if (!isset($_SESSION['email']) || $_SESSION['user_type'] != 'user') {
+if (!isset($_SESSION['email'])) {
     header("Location: login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];  
 $location_id = $_GET['location_id'];  
+$user_type = $_SESSION['user_type'];
 
 
 
@@ -33,24 +34,25 @@ if ($used_stations < $num_stations) {
     
     if ($conn->query($insert_query) === TRUE) {
         echo "You have successfully checked in!";
+        if ($user_type == 'admin') {
+            echo "<a href='admin_dash.php'>Go back to admin dashboard</a>";
+        } else {
+            echo "<a href='user_dash.php'>Go back to user dashboard</a>";
+        }
     } else {
         echo "Error: " . $conn->error;
     }
 } else {
     echo "No available stations at this location.";
+    echo "<br>";
+    if ($user_type == 'admin') {
+        echo "<a href='admin_dash.php'>Go back to admin dashboard</a>";
+    } else {
+        echo "<a href='user_dash.php'>Go back to user dashboard</a>";
+    }
     
 }
 
 $conn->close();
 ?>
 
-<DOCTYPE html>
-    <html>
-    <head>
-        <title>Check In</title>
-    </head>
-    <body>
-        <br>
-        <button onclick="window.location.href='user_dash.php';">Back</button>
-    </body>
-    </html>

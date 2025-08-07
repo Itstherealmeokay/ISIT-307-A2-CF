@@ -79,9 +79,10 @@ $result = $conn->query($query);
 
         <?php
         // Check In Sessions
-        $query = "SELECT cs.location_id, cl.description, cs.check_in_time
+        $query = "SELECT cs.location_id, cl.description, cs.check_in_time, cs.session_id
                     FROM ChargingSessions cs
-                    JOIN ChargingLocations cl ON cs.location_id = cl.location_id";
+                    JOIN ChargingLocations cl ON cs.location_id = cl.location_id
+                    WHERE cs.check_out_time IS NULL";
                     
         $result = $conn->query($query);
         ?>
@@ -101,7 +102,7 @@ $result = $conn->query($query);
                         echo "<tr>
                                 <td>" . $row["description"] . "</td>
                                 <td>" . $row["check_in_time"] . "</td>
-                                <td><a href='check_out.php'>Check Out</a></td>
+                                <td><a href='check_out.php?session_id=" . $row["session_id"] . "'>Check Out</a></td>
                             </tr>";
                     }
                 } else {
@@ -110,6 +111,45 @@ $result = $conn->query($query);
                 ?>
             </table>
         </div>
+        
+        <?php
+        // Check Out Sessions   
+        $query = "SELECT cs.location_id, cl.description, cs.check_in_time, cs.check_out_time, cs.total_cost
+                    FROM ChargingSessions cs
+                    JOIN ChargingLocations cl ON cs.location_id = cl.location_id
+                    WHERE cs.check_out_time IS NOT NULL";
+                    
+        $result = $conn->query($query);
+        ?>
+
+        <h2>Check-out Sessions</h2>
+        <div class="table-container">
+            <table border="1">
+                <tr>
+                    <th>Location</th>
+                    <th>Check-in Time</th>
+                    <th>Check-out Time</th>
+                    <th>Total Cost</th>
+                </tr>
+
+                <?php
+                // Display all check-out sessions
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        echo "<tr>
+                                <td>" . $row["description"] . "</td>
+                                <td>" . $row["check_in_time"] . "</td>
+                                <td>" . $row["check_out_time"] . "</td>
+                                <td>" . $row["total_cost"] . "</td>
+                            </tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='4'>No check-out sessions found.</td></tr>";
+                }
+                ?>
+            </table>
+        </div>
+
 
         <button><a href="logout.php">Logout</a></button>
 
