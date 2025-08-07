@@ -1,0 +1,26 @@
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    user_type ENUM('admin', 'user') NOT NULL
+);
+
+CREATE TABLE ChargingLocations (
+    location_id INT AUTO_INCREMENT PRIMARY KEY,
+    description VARCHAR(255) NOT NULL,
+    num_stations INT NOT NULL,
+    cost_per_hour DECIMAL(10, 2) NOT NULL
+);
+
+
+CREATE TABLE ChargingSessions (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    location_id INT,
+    check_in_time DATETIME NOT NULL,
+    check_out_time DATETIME,
+    total_cost DECIMAL(10, 2),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (location_id) REFERENCES ChargingLocations(location_id)
+);
