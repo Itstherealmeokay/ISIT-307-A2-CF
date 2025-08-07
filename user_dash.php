@@ -49,7 +49,7 @@ include('db_config.php');
                             echo "<tr>
                                     <td>" . $row["location_id"] . "</td>
                                     <td>" . $row["description"] . "</td>
-                                    <td>" . $row["num_stations"] . "</td>
+                                    <td>" . ($row["num_stations"] - $row["active_sessions"]) . "</td>
                                     <td>" . $row["cost_per_hour"] . "</td>
                                 </tr>";
                         }
