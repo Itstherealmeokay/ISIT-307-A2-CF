@@ -2,7 +2,7 @@
 session_start();
 
 // Check if user is logged in, else redirect to login
-if (!isset($_SESSION['email'])) {
+if (!isset($_SESSION['email']) ||$_SESSION['user_type'] != 'user') {
     header("Location: login.php");
     exit();
 }
