@@ -12,6 +12,10 @@ $user_id = $_SESSION['user_id'];
 $location_id = $_GET['location_id'];  
 $user_type = $_SESSION['user_type'];
 
+if ($user_type == 'admin') {
+    $user_id = $_GET['user_id'];
+}
+
 
 
 // Check if the location has available stations
@@ -29,7 +33,7 @@ $used_stations = $used_row['used'];
 // If there is an available station, allow check-in
 if ($used_stations < $num_stations) {
     // Insert new check-in record
-    $check_in_time = date('Y-m-d H:i:s');
+    $check_in_time = $_GET['check_in_time'];
     $insert_query = "INSERT INTO ChargingSessions (user_id, location_id, check_in_time) VALUES ('$user_id', '$location_id', '$check_in_time')";
     
     if ($conn->query($insert_query) === TRUE) {
@@ -55,4 +59,3 @@ if ($used_stations < $num_stations) {
 
 $conn->close();
 ?>
-

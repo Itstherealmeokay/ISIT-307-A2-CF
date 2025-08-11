@@ -37,7 +37,7 @@ if ($conn->query($update_query) === TRUE) {
         $conn->query($update_cost_query);
     }
 
-    echo "Check-out successful.";
+    echo "Check-out successful. Total cost: $" . number_format($total_cost, 2) . "<br>";
     if ($user_type === 'user') {
         echo "<br><a href='user_dash.php'>Go back to user dashboard</a>";
     } else {

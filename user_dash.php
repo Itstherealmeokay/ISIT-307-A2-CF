@@ -11,6 +11,23 @@ $name = $_SESSION['name'];
 $user_id = $_SESSION['user_id'];
 include('db_config.php');
 
+$location_sql = "SELECT cl.location_id, cl.description, cl.num_stations, cl.cost_per_hour, COUNT(cs.session_id) AS active_sessions
+                FROM ChargingLocations cl
+                LEFT JOIN ChargingSessions cs ON cl.location_id = cs.location_id AND cs.check_out_time IS NULL
+                GROUP BY cl.location_id
+                HAVING COUNT(cs.session_id) < cl.num_stations";
+        $result = $conn->query($location_sql);
+
+if (isset($_GET['search_location'])) {
+    $location_sql = "SELECT cl.location_id, cl.description, cl.num_stations, cl.cost_per_hour, COUNT(cs.session_id) AS active_sessions
+                    FROM ChargingLocations cl
+                    LEFT JOIN ChargingSessions cs ON cl.location_id = cs.location_id AND cs.check_out_time IS NULL
+                    WHERE cl.description LIKE '%$_GET[search_location]%'
+                    GROUP BY cl.location_id
+                    HAVING COUNT(cs.session_id) < cl.num_stations";
+    $result = $conn->query($location_sql);
+}
+
 ?>
 
 <DOCTYPE html>
@@ -20,19 +37,28 @@ include('db_config.php');
         <style>
             .table-container {
             margin-bottom: 20px;
-        }
+            }
+
+            .checkin-container {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            }
         </style>
     </head>
     <body>
-        <?php
-        $sql = "SELECT cl.location_id, cl.description, cl.num_stations, cl.cost_per_hour, COUNT(cs.session_id) AS active_sessions
-                FROM ChargingLocations cl
-                LEFT JOIN ChargingSessions cs ON cl.location_id = cs.location_id AND cs.check_out_time IS NULL
-                GROUP BY cl.location_id
-                HAVING COUNT(cs.session_id) < cl.num_stations";
-        $result = $conn->query($sql);
-        ?>
+
+        
+    
         <h1>Welcome, User! <?php echo $name; ?></h1>
+        <h2> Available Charging Locations</h2>
+            <form action ="user_dash.php" method="GET">
+                <input type="text" name="search_location" placeholder="Search Location">
+                <input type="submit" value="Search">
+            </form>
+
+        <hr>
         <div class="table-container">
             <table border="1">
                 <tr>
@@ -61,31 +87,34 @@ include('db_config.php');
 
             </table>
         </div>
+        <div class="checkin-container">
+            <b>Check-in Session</b>
+            <form action="check_in.php" method="GET">
+            <label for="location_id">Select Location:</label>
+            <select name="location_id" required>
+                <?php
+                // Query the database again for the dropdown
+                $dropdown_query = "SELECT * FROM ChargingLocations";
+                $dropdown_result = $conn->query($dropdown_query);
 
-        <form action="check_in.php" method="GET">
-        <label for="location_id">Select Location:</label>
-        <select name="location_id" required>
-            <?php
-            // Query the database again for the dropdown
-            $dropdown_query = "SELECT * FROM ChargingLocations";
-            $dropdown_result = $conn->query($dropdown_query);
-
-            if ($dropdown_result->num_rows > 0) {
-                while ($row = $dropdown_result->fetch_assoc()) {
-                    echo "<option value='" . $row['location_id'] . "'>" . $row['description'] . "</option>";
+                if ($dropdown_result->num_rows > 0) {
+                    while ($row = $dropdown_result->fetch_assoc()) {
+                        echo "<option value='" . $row['location_id'] . "'>" . $row['description'] . "</option>";
+                    }
                 }
-            }
-            ?>
-        </select>
-        <input type="submit" value="Check-in">
-        </form>
-
+                ?>
+            </select><br><br>
+            <label for="check_in_time">Enter Check-In Date and Time:</label>
+            <input type="datetime-local" name="check_in_time" required>
+            <input type="submit" value="Check-in">
+            </form>
+        </div>
         <?php
         // Check In Sessions
         $query = "SELECT cs.location_id, cl.description, cs.check_in_time, cs.session_id
                     FROM ChargingSessions cs
                     JOIN ChargingLocations cl ON cs.location_id = cl.location_id
-                    WHERE cs.check_out_time IS NULL";
+                    WHERE cs.check_out_time IS NULL AND cs.user_id = '$user_id'";
                     
         $result = $conn->query($query);
         ?>
@@ -120,7 +149,7 @@ include('db_config.php');
         $query = "SELECT cs.location_id, cl.description, cs.check_in_time, cs.check_out_time, cs.total_cost
                     FROM ChargingSessions cs
                     JOIN ChargingLocations cl ON cs.location_id = cl.location_id
-                    WHERE cs.check_out_time IS NOT NULL";
+                    WHERE cs.check_out_time IS NOT NULL AND cs.user_id = '$user_id'";
                     
         $result = $conn->query($query);
         ?>
