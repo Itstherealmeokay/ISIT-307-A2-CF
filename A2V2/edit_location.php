@@ -51,7 +51,7 @@ $locations = $chargingLocation->getAllLocations();
         </select><br><br>
 
         <label for="description">Description:</label><br>
-        <input type="text" name="description" required><br><br>
+        <input type="text" name="description" placeholder="" required><br><br>
 
         <label for="num_stations">Number of Stations:</label><br>
         <input type="number" name="num_stations" required><br><br>
@@ -61,7 +61,7 @@ $locations = $chargingLocation->getAllLocations();
 
         <input type="submit" name="update_location" value="Update Location">
     </form>
-
+    <br>
     <button onclick="window.location.href='admin_dash.php';">Back to Admin Dashboard</button>
 </body>
 </html>

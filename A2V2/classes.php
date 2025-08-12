@@ -156,6 +156,14 @@ class User {
         }
         
     }
+
+    public function filterIfCheckedIn() {
+        $sql = "SELECT u.user_id, u.name, u.email, u.user_type 
+                FROM Users u
+                LEFT JOIN ChargingSessions cs ON u.user_id = cs.user_id
+                WHERE cs.check_out_time IS NULL AND u.user_type = 'user' AND cs.check_in_time IS NOT NULL";
+        return $this->db->query($sql);
+    }
 }
 
 
@@ -214,34 +222,16 @@ class ChargingSession {
         $check_out_time = new DateTime($row['check_out_time']);
         $cost_per_hour = $row['cost_per_hour'];
 
-        // Set the correct timezone for both check-in and check-out times
-
-        // Calculate the interval (duration) between check-in and check-out times
         $interval = $check_in_time->diff($check_out_time);
 
-        // Debugging: Output the interval components (hours, days, minutes)
-        echo "Check-in time: " . $check_in_time->format('Y-m-d H:i:s') . "\n";
-        echo "Check-out time: " . $check_out_time->format('Y-m-d H:i:s') . "\n";
-        echo "Interval: " . $interval->format('%d days, %h hours, %i minutes') . "\n";
-
-        // Calculate total hours (adding hours, days as hours, and minutes as a fraction)
         $total_hours = $interval->h + ($interval->days * 24) + ($interval->i / 60);
-
-        // Debugging: Output the total hours
-        echo "Total hours calculated: " . $total_hours . "\n";
 
         // If the duration is less than 1 hour, set total_hours to 1 (to avoid small charges)
         if ($total_hours < 1) {
             $total_hours = 1; // Round to 1 hour if the duration is less than 1 hour
-            echo "Total hours rounded to: " . $total_hours . "\n";
         }
 
-        // Calculate the total cost
         $total_cost = $cost_per_hour * $total_hours;
-
-        // Debugging: Output the cost calculation
-        echo "Cost per hour: " . $cost_per_hour . "\n";
-        echo "Total cost calculated: " . $total_cost . "\n";
 
         // Return the total cost rounded to 2 decimal places
         return number_format($total_cost, 2);

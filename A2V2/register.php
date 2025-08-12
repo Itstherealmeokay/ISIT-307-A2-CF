@@ -7,6 +7,7 @@ include('db_config.php');
 
 $db = new Database($host, $username, $password, $dbname);
 $user = new User($db);
+$is_admin = isset($_SESSION['user_type']) && $_SESSION['user_type'] == 'admin';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
@@ -68,7 +69,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </select>
         <br>
         <input type="submit" value="Register">
-    </form>
-    <button><a href="login.php">Login</a></button>
+    </form><br>
+<?php
+if ($is_admin) {
+    echo '<button onclick="window.location.href=\'admin_dash.php\';">Back to Admin Dashboard</button>';
+} 
+
+else {
+        echo '<button onclick="window.location.href=\'login.php\';">Login</button>';
+}
+?>
 </body>
 </html>
