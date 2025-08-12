@@ -113,6 +113,7 @@ $completed_sessions = $chargingSession->getCheckoutSessions($user_id);
         </select><br><br>
         <label for="check_in_time">Enter Check-In Date and Time:</label>
         <input type="datetime-local" name="check_in_time" required>
+        <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
         <input type="submit" value="Check-in">
     </form>
 </div>
@@ -128,12 +129,16 @@ $completed_sessions = $chargingSession->getCheckoutSessions($user_id);
 
         <?php
         // Display active sessions
+        $user_id = $_SESSION['user_id'];
+        $timezone = new DateTimeZone('Asia/Singapore');
+        
         if ($active_sessions->num_rows > 0) {
             while($row = $active_sessions->fetch_assoc()) {
+                
                 echo "<tr>
                         <td>" . $row["description"] . "</td>
                         <td>" . $row["check_in_time"] . "</td>
-                        <td><a href='checkout.php?session_id=" . $row["session_id"] . "&check_out_time=" . date('Y-m-d H:i:s') . "'>Check-out</a></td>
+                        <td><a href='checkout.php?session_id=" . $row["session_id"] . "&user_id=" . $user_id . "&check_out_time=" . date('Y-m-d H:i:s') . "'>Check-out</a></td>
                     </tr>";
             }
         } else {
@@ -155,6 +160,8 @@ $completed_sessions = $chargingSession->getCheckoutSessions($user_id);
 
         <?php
         // Display completed sessions
+        // set the timezone to Asia/Singapore
+        date_default_timezone_set('Asia/Singapore');
         if ($completed_sessions->num_rows > 0) {
             while($row = $completed_sessions->fetch_assoc()) {
                 echo "<tr>

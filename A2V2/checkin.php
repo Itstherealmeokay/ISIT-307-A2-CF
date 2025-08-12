@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['email']) || $_SESSION['user_type'] != 'user') {
+if (!isset($_SESSION['email'])) {
     header("Location: login.php");
     exit();
 }
@@ -15,17 +15,15 @@ $chargingSession = new ChargingSession($db);
 
 if (isset($_GET['location_id'])) {
     $location_id = $_GET['location_id'];
-    $user_id = $_SESSION['user_id'];
+    $user_id = $_GET['user_id'];
     $check_in_time = $_GET['check_in_time'];
-
-    //if admin user_id = Get
-    if ($_SESSION['user_type'] == 'admin') {
-        $user_id = $_GET['user_id'];
-    }
     $chargingSession->checkIn($user_id, $location_id, $check_in_time);
 }
+//use assoc
+$price_hour =  $chargingLocation->getPrice_Per_Hour($location_id)->fetch_assoc()['cost_per_hour'];
 
-$price_hour = $chargingLocation->getPrice_Per_Hour($location_id); 
+
+
 ?>
 
 <!DOCTYPE html>
@@ -34,10 +32,15 @@ $price_hour = $chargingLocation->getPrice_Per_Hour($location_id);
     <title>Check In</title>
 </head>
 <body>
-    <p>Check In successful!</p><br>
-    <p>Price Per Hour : $<?php echo $price_hour; ?></p>
-
-    <a href="user_dash.php">Back to Dashboard</a>
+    <p>Check In successful!</p>
+    <p>Price per hour: $<?php echo $price_hour; ?></p>
+    <?php
+    if ($_SESSION['user_type'] == 'admin') {
+        echo "<a href='admin_dash.php'>Go to Admin Dashboard</a>";    
+    } else {
+        echo "<a href='user_dash.php'>Go to User Dashboard</a>";    
+    }
+    ?>
 </body>
 </html>
     

@@ -2,12 +2,12 @@
 session_start();
 
 // Check if user is logged in
-if (!isset($_SESSION['email']) || $_SESSION['user_type'] != 'user') {
+if (!isset($_SESSION['email'])) {
     header("Location: login.php");
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_GET['user_id'];
 $session_id = $_GET['session_id'];  // Get session ID from URL
 $user_type = $_SESSION['user_type'];
 
@@ -33,19 +33,19 @@ if (isset($session_id)) {
         $check_in_time = $session_row['check_in_time'];
         $location_id = $session_row['location_id'];
 
-        // Assuming you're passing the check-out time from the form
-        if (isset($_GET['check_out_time'])) {
-            $check_out_time = $_GET['check_out_time'];
-            $check_out_time = $db->escape_string($check_out_time);
-            
-            // Calculate the total cost based on check-in and check-out times
-            $total_cost = $chargingSession->calculateTotalCost($session_id);
+        // Set the time zone to the local machine's timezone (SGT in this case)
+        date_default_timezone_set('Asia/Singapore');  // Set the timezone to Singapore Time (SGT)
+        
+        // Get current local system time as the checkout time
+        $check_out_time = date('Y-m-d H:i:s');  // Get current system time in SGT
 
-            // Update the session with the check-out time and total cost
-            $chargingSession->checkOut($session_id, $check_out_time, $total_cost);
+        // Calculate the total cost based on check-in and check-out times
+        $total_cost = $chargingSession->calculateTotalCost($session_id);
 
-            echo "Successfully checked out!";
-        }
+        // Update the session with the check-out time and total cost
+        $chargingSession->checkOut($session_id, $check_out_time, $total_cost);
+
+        echo "Successfully checked out!";
     } else {
         echo "No active sessions found for the user.";
     }
@@ -62,9 +62,15 @@ $db->close();  // Close the database connection
     <title>Checkout</title>
 </head>
 <body>
-    <p>Checkout successful!</p><br>
-    <p>Paid: $<?php echo $total_cost, 2; ?></p>
+    <p>Checkout successful!</p>
+    <p>Paid: $<?php echo number_format($total_cost, 2); ?></p>
 
-    <a href="user_dash.php">Back to Dashboard</a>
+    <?php
+        if ($_SESSION['user_type'] == 'admin') {
+            echo "<a href='admin_dash.php'>Go to Admin Dashboard</a>";    
+        } else {
+            echo "<a href='user_dash.php'>Go to User Dashboard</a>";    
+        }
+    ?>
 </body>
 </html>

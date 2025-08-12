@@ -77,6 +77,20 @@ class ChargingLocation {
         $location_id = $this->db->escape_string($location_id);
         $sql = "SELECT cost_per_hour FROM ChargingLocations WHERE location_id = '$location_id'";
         return $this->db->query($sql);
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['cost_per_hour'];
+        }
+        return null;
+    }
+
+    public function updateLocation($location_id, $description, $num_stations, $cost_per_hour) {
+        $description = $this->db->escape_string($description);
+        $num_stations = $this->db->escape_string($num_stations);
+        $cost_per_hour = $this->db->escape_string($cost_per_hour);
+        $sql = "UPDATE ChargingLocations SET description = '$description', num_stations = '$num_stations', cost_per_hour = '$cost_per_hour' WHERE location_id = '$location_id'";
+        return $this->db->query($sql);
     }
 
 }
@@ -114,6 +128,33 @@ class User {
         }
 
         return $this->db->query($sql);
+    }
+
+    public function getUserById($user_id) {
+        $user_id = $this->db->escape_string($user_id);
+        $sql = "SELECT * FROM Users WHERE user_id = '$user_id'";
+        return $this->db->query($sql);
+    }
+
+    public function getAllUsers() {
+        $sql = "SELECT * FROM Users";
+        return $this->db->query($sql);
+    }
+
+    public function register($name, $email, $phone, $user_type) {
+        $name = $this->db->escape_string($name);
+        $email = $this->db->escape_string($email);
+        $phone = $this->db->escape_string($phone);
+        $user_type = $this->db->escape_string($user_type);
+        $sql = "INSERT INTO Users (name, email, phone, user_type) VALUES ('$name', '$email', '$phone', '$user_type')";
+        return $this->db->query($sql);
+
+        if ($this->db->query($sql) === TRUE) {
+            return "User registered successfully";
+        } else {
+            return "Error: " . $sql . "<br>" . $this->db->error;
+        }
+        
     }
 }
 
@@ -173,20 +214,56 @@ class ChargingSession {
         $check_out_time = new DateTime($row['check_out_time']);
         $cost_per_hour = $row['cost_per_hour'];
 
+        // Set the correct timezone for both check-in and check-out times
+
         // Calculate the interval (duration) between check-in and check-out times
         $interval = $check_in_time->diff($check_out_time);
 
-        // Get total hours
-        $total_hours = $interval->h + ($interval->days * 24) + ($interval->i / 60); // Include minutes in hours
+        // Debugging: Output the interval components (hours, days, minutes)
+        echo "Check-in time: " . $check_in_time->format('Y-m-d H:i:s') . "\n";
+        echo "Check-out time: " . $check_out_time->format('Y-m-d H:i:s') . "\n";
+        echo "Interval: " . $interval->format('%d days, %h hours, %i minutes') . "\n";
+
+        // Calculate total hours (adding hours, days as hours, and minutes as a fraction)
+        $total_hours = $interval->h + ($interval->days * 24) + ($interval->i / 60);
+
+        // Debugging: Output the total hours
+        echo "Total hours calculated: " . $total_hours . "\n";
+
+        // If the duration is less than 1 hour, set total_hours to 1 (to avoid small charges)
+        if ($total_hours < 1) {
+            $total_hours = 1; // Round to 1 hour if the duration is less than 1 hour
+            echo "Total hours rounded to: " . $total_hours . "\n";
+        }
 
         // Calculate the total cost
         $total_cost = $cost_per_hour * $total_hours;
-        return $total_cost;
+
+        // Debugging: Output the cost calculation
+        echo "Cost per hour: " . $cost_per_hour . "\n";
+        echo "Total cost calculated: " . $total_cost . "\n";
+
+        // Return the total cost rounded to 2 decimal places
+        return number_format($total_cost, 2);
     }
 
     return 0;  // If session data is not found
 }
 
-}
 
+
+
+
+
+
+    public function addLocation($description, $num_stations, $cost_per_hour) {
+        $description = $this->db->escape_string($description);
+        $num_stations = $this->db->escape_string($num_stations);
+        $cost_per_hour = $this->db->escape_string($cost_per_hour);
+        $sql = "INSERT INTO ChargingLocations (description, num_stations, cost_per_hour) VALUES ('$description', '$num_stations', '$cost_per_hour')";
+        return $this->db->query($sql);
+
+    }
+
+}
 ?>
